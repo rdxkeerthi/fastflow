@@ -1,0 +1,24 @@
+name: Continuous Fuzzing
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Nightly run at 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  fuzz:
+    name: LibFuzzer Protocol & PCAP Robustness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nightly Rust (Required for Sanitizers & LibFuzzer)
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+
+      - name: Fuzz PCAP Parser Target (300 seconds)
+        run: |
+          cd crates/fastflow-core
+          cargo fuzz run fuzz_pcap_parse -- -max_total_time=300 -timeout=10

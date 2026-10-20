@@ -1,0 +1,50 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "fastflow"
+version = "0.1.0"
+description = "Ultra-high-performance zero-copy network telemetry and PCAP parser powered by Rust."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT OR Apache-2.0" }
+authors = [
+    { name = "rdxkeerthi", email = "keerthivasan.sud.saveetha@gmail.com" }
+]
+keywords = ["pcap", "networking", "telemetry", "rust", "zero-copy", "packet-analysis", "security"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Networking :: Monitoring",
+    "Topic :: Security",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows"
+]
+
+[project.urls]
+Homepage = "https://github.com/rdxkeerthi/fastflow"
+Repository = "https://github.com/rdxkeerthi/fastflow"
+Documentation = "https://github.com/rdxkeerthi/fastflow#readme"
+Issues = "https://github.com/rdxkeerthi/fastflow/issues"
+
+[tool.maturin]
+manifest-path = "crates/fastflow-py/Cargo.toml"
+module-name = "fastflow"
+python-source = "python"
+features = ["pyo3/extension-module"]
+strip = true

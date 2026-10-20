@@ -1,0 +1,5 @@
+[target.x86_64-pc-windows-gnullvm]
+linker = "rust-lld"
+
+[env]
+PYO3_PYTHON = "C:\\Users\\admin\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"

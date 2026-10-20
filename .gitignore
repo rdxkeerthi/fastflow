@@ -1,0 +1,48 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dylib
+build/
+dist/
+eggs/
+*.egg-info/
+.eggs/
+*.whl
+venv/
+.venv/
+env/
+.env
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Criterion & Coverage
+target/criterion/
+*.profraw
+*.profdata
+lcov.info
+
+# Fuzzing
+crates/fastflow-core/fuzz/corpus/
+crates/fastflow-core/fuzz/artifacts/
+crates/fastflow-core/fuzz/target/
+tests/*
+
+# Other Files
+*.dll
+*.skill
+*.rdx
+*/tests/
