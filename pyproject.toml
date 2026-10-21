@@ -46,5 +46,6 @@ Issues = "https://github.com/rdxkeerthi/fastflow/issues"
 manifest-path = "crates/fastflow-py/Cargo.toml"
 module-name = "fastflow"
 python-source = "python"
+include = ["python/fastflow/*.dll"]
 features = ["pyo3/extension-module"]
 strip = true

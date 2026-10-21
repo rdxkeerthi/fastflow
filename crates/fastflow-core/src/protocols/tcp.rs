@@ -77,6 +77,19 @@ pub struct TcpHeader<'a> {
     pub payload: &'a [u8],
 }
 
+/// Parsed TCP Option according to RFC 793 and RFC 7323.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TcpOption<'a> {
+    EndOfOptions,
+    NoOperation,
+    MaximumSegmentSize(u16),
+    WindowScale(u8),
+    SackPermitted,
+    Sack(Vec<(u32, u32)>),
+    Timestamp { val: u32, echo: u32 },
+    Unknown { kind: u8, data: &'a [u8] },
+}
+
 impl<'a> TcpHeader<'a> {
     pub const MIN_HEADER_LEN: usize = 20;
 
@@ -136,6 +149,70 @@ impl<'a> TcpHeader<'a> {
             options,
             payload,
         })
+    }
+
+    /// Parses TCP options with strict validation against infinite loops and underflows.
+    pub fn parse_options(&self) -> Result<Vec<TcpOption<'a>>> {
+        let mut opts = Vec::new();
+        let mut cursor = 0;
+        let data = self.options;
+
+        while cursor < data.len() {
+            let kind = data[cursor];
+            if kind == 0 {
+                opts.push(TcpOption::EndOfOptions);
+                break;
+            }
+            if kind == 1 {
+                opts.push(TcpOption::NoOperation);
+                cursor += 1;
+                continue;
+            }
+
+            if cursor + 1 >= data.len() {
+                return Err(FastFlowError::BufferUnderflow {
+                    needed: 2,
+                    available: data.len() - cursor,
+                });
+            }
+
+            let len = data[cursor + 1] as usize;
+            if len < 2 {
+                // SECURITY GUARD: Option length < 2 causes infinite loop (Denial of Service)
+                return Err(FastFlowError::MalformedFrame(
+                    "Invalid TCP option length (< 2 bytes)",
+                ));
+            }
+
+            if cursor + len > data.len() {
+                return Err(FastFlowError::BufferUnderflow {
+                    needed: len,
+                    available: data.len() - cursor,
+                });
+            }
+
+            let opt_data = &data[cursor + 2..cursor + len];
+            let opt = match (kind, opt_data.len()) {
+                (2, 2) => {
+                    TcpOption::MaximumSegmentSize(u16::from_be_bytes([opt_data[0], opt_data[1]]))
+                }
+                (3, 1) => TcpOption::WindowScale(opt_data[0]),
+                (4, 0) => TcpOption::SackPermitted,
+                (8, 8) => TcpOption::Timestamp {
+                    val: u32::from_be_bytes([opt_data[0], opt_data[1], opt_data[2], opt_data[3]]),
+                    echo: u32::from_be_bytes([opt_data[4], opt_data[5], opt_data[6], opt_data[7]]),
+                },
+                _ => TcpOption::Unknown {
+                    kind,
+                    data: opt_data,
+                },
+            };
+
+            opts.push(opt);
+            cursor += len;
+        }
+
+        Ok(opts)
     }
 }
 

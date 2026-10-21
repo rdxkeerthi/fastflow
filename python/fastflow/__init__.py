@@ -16,11 +16,26 @@ if sys.platform == "win32":
         except OSError:
             pass
 
-from .fastflow import FlowAggregator, FlowMetrics, PacketRecord, __version__
+from .fastflow import (
+    AnomalyAlert,
+    FlowAggregator,
+    FlowMetrics,
+    PacketIterator,
+    PacketRecord,
+    TimeBucket,
+    __version__,
+    compute_shannon_entropy,
+    shannon_entropy,
+)
 
 __all__ = [
+    "AnomalyAlert",
     "FlowAggregator",
     "FlowMetrics",
+    "PacketIterator",
     "PacketRecord",
+    "TimeBucket",
     "__version__",
+    "compute_shannon_entropy",
+    "shannon_entropy",
 ]

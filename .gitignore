@@ -39,10 +39,7 @@ lcov.info
 crates/fastflow-core/fuzz/corpus/
 crates/fastflow-core/fuzz/artifacts/
 crates/fastflow-core/fuzz/target/
-tests/*
 
 # Other Files
-*.dll
 *.skill
 *.rdx
-*/tests/

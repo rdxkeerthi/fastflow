@@ -68,6 +68,59 @@ impl<'a> Ipv6Header<'a> {
             payload,
         })
     }
+
+    /// Safely traverses IPv6 extension headers up to a depth of 8 to extract
+    /// the ultimate upper-layer protocol number (TCP, UDP, etc.) and payload slice.
+    pub fn traverse_extension_headers(&self) -> (u8, &'a [u8]) {
+        let mut curr_proto = self.next_header;
+        let mut data = self.payload;
+        let mut depth = 0;
+
+        while depth < 8 {
+            match curr_proto {
+                0 | 43 | 60 => {
+                    // Hop-by-Hop (0), Routing (43), Destination Options (60)
+                    if data.len() < 2 {
+                        break;
+                    }
+                    let next = data[0];
+                    let ext_len = ((data[1] as usize) + 1) * 8;
+                    if data.len() < ext_len {
+                        break;
+                    }
+                    curr_proto = next;
+                    data = &data[ext_len..];
+                    depth += 1;
+                }
+                44 => {
+                    // Fragment Header: fixed 8 bytes
+                    if data.len() < 8 {
+                        break;
+                    }
+                    curr_proto = data[0];
+                    data = &data[8..];
+                    depth += 1;
+                }
+                51 => {
+                    // Authentication Header (AH)
+                    if data.len() < 2 {
+                        break;
+                    }
+                    let next = data[0];
+                    let ext_len = ((data[1] as usize) + 2) * 4;
+                    if data.len() < ext_len {
+                        break;
+                    }
+                    curr_proto = next;
+                    data = &data[ext_len..];
+                    depth += 1;
+                }
+                _ => break,
+            }
+        }
+
+        (curr_proto, data)
+    }
 }
 
 #[cfg(test)]

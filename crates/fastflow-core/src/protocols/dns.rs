@@ -124,14 +124,47 @@ pub struct DnsMessage<'a> {
 }
 
 const MAX_DNS_POINTER_DEPTH: usize = 16;
+const MAX_DNS_NAME_LENGTH: usize = 255;
+const MAX_DNS_LABEL_LENGTH: usize = 63;
 
-/// Reads a domain name safely from a DNS packet with compression pointer support
-/// and cycle protection.
+/// Computes the Shannon entropy of a string (e.g. domain name).
+///
+/// Commonly used in SOC environments to detect Domain Generation Algorithms (DGA)
+/// and DNS tunneling/data exfiltration (entropy typically > 3.8).
+pub fn compute_shannon_entropy(s: &str) -> f64 {
+    if s.is_empty() {
+        return 0.0;
+    }
+    let mut counts = [0u32; 256];
+    let mut len = 0usize;
+    for &b in s.as_bytes() {
+        if b != b'.' {
+            counts[b as usize] += 1;
+            len += 1;
+        }
+    }
+    if len == 0 {
+        return 0.0;
+    }
+    let len_f = len as f64;
+    let mut entropy = 0.0;
+    for &c in &counts {
+        if c > 0 {
+            let p = (c as f64) / len_f;
+            entropy -= p * p.log2();
+        }
+    }
+    entropy
+}
+
+/// Reads a domain name safely from a DNS packet with compression pointer support,
+/// visited offset cycle tracking, and RFC 1035 length enforcement.
 pub fn read_dns_name(packet: &[u8], mut offset: usize) -> Result<(String, usize)> {
     let mut name = String::with_capacity(64);
     let mut jumps = 0usize;
     let mut initial_consumed = 0usize;
     let mut has_jumped = false;
+    let mut visited_offsets = [0usize; MAX_DNS_POINTER_DEPTH];
 
     loop {
         if offset >= packet.len() {
@@ -152,8 +185,7 @@ pub fn read_dns_name(packet: &[u8], mut offset: usize) -> Result<(String, usize)
                 });
             }
 
-            jumps += 1;
-            if jumps > MAX_DNS_POINTER_DEPTH {
+            if jumps >= MAX_DNS_POINTER_DEPTH {
                 return Err(FastFlowError::DnsPointerLoop(offset));
             }
 
@@ -163,6 +195,13 @@ pub fn read_dns_name(packet: &[u8], mut offset: usize) -> Result<(String, usize)
                     "Pointer target outside DNS packet bounds",
                 ));
             }
+
+            // Explicit visited cycle detection
+            if visited_offsets[..jumps].contains(&pointer_target) {
+                return Err(FastFlowError::DnsPointerLoop(pointer_target));
+            }
+            visited_offsets[jumps] = pointer_target;
+            jumps += 1;
 
             if !has_jumped {
                 initial_consumed = offset + 2;
@@ -183,6 +222,18 @@ pub fn read_dns_name(packet: &[u8], mut offset: usize) -> Result<(String, usize)
 
         // Standard label
         let label_len = len as usize;
+        if label_len > MAX_DNS_LABEL_LENGTH {
+            return Err(FastFlowError::DnsParsingError(
+                "DNS label exceeds RFC 1035 max length (63 bytes)",
+            ));
+        }
+
+        if name.len() + label_len + 1 > MAX_DNS_NAME_LENGTH {
+            return Err(FastFlowError::DnsParsingError(
+                "DNS total domain name exceeds RFC 1035 max length (255 bytes)",
+            ));
+        }
+
         offset += 1;
 
         if offset + label_len > packet.len() {

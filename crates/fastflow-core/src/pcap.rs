@@ -447,6 +447,61 @@ impl PcapEngine {
             })
             .collect()
     }
+
+    /// Returns a streaming iterator over packet records without allocating vectors.
+    pub fn iter(&self) -> PcapIter<'_> {
+        PcapIter {
+            engine: self,
+            cursor: PcapHeader::HEADER_LEN,
+        }
+    }
+}
+
+/// Streaming zero-allocation iterator over packet records in a PCAP buffer.
+pub struct PcapIter<'a> {
+    engine: &'a PcapEngine,
+    cursor: usize,
+}
+
+impl<'a> Iterator for PcapIter<'a> {
+    type Item = Result<PacketRecord>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let bytes = self.engine.bytes();
+        if self.cursor + 16 > bytes.len() {
+            return None;
+        }
+
+        let bo = self.engine.header.byte_order;
+        let caplen = match bo {
+            ByteOrder::BigEndian => u32::from_be_bytes([
+                bytes[self.cursor + 8],
+                bytes[self.cursor + 9],
+                bytes[self.cursor + 10],
+                bytes[self.cursor + 11],
+            ]) as usize,
+            ByteOrder::LittleEndian => u32::from_le_bytes([
+                bytes[self.cursor + 8],
+                bytes[self.cursor + 9],
+                bytes[self.cursor + 10],
+                bytes[self.cursor + 11],
+            ]) as usize,
+        };
+
+        let next_cursor = match self
+            .cursor
+            .checked_add(16)
+            .and_then(|c| c.checked_add(caplen))
+        {
+            Some(nc) if nc <= bytes.len() => nc,
+            _ => return None,
+        };
+
+        let current_offset = self.cursor;
+        self.cursor = next_cursor;
+
+        Some(self.engine.parse_record_at(current_offset))
+    }
 }
 
 pub type DecodedLayers = (

@@ -20,14 +20,18 @@ pub mod protocols;
 pub mod zero_copy;
 
 // Convenient top-level re-exports
-pub use aggregator::{FlowKey, FlowMetrics, TrafficAggregator};
+pub use aggregator::{
+    AnomalyAlert, AnomalyType, FlowKey, FlowMetrics, TimeBucket, TrafficAggregator,
+};
 pub use error::{FastFlowError, Result};
-pub use pcap::{PacketRecord, PcapEngine, PcapHeader, TimestampResolution};
-pub use protocols::dns::{DnsHeader, DnsMessage, DnsQuestion, DnsRecord, DnsType};
+pub use pcap::{PacketRecord, PcapEngine, PcapHeader, PcapIter, TimestampResolution};
+pub use protocols::dns::{
+    compute_shannon_entropy, DnsHeader, DnsMessage, DnsQuestion, DnsRecord, DnsType,
+};
 pub use protocols::ethernet::{EtherType, EthernetFrame, MacAddress};
 pub use protocols::icmp::{IcmpHeader, IcmpType};
 pub use protocols::ipv4::Ipv4Header;
 pub use protocols::ipv6::Ipv6Header;
-pub use protocols::tcp::{TcpFlags, TcpHeader};
+pub use protocols::tcp::{TcpFlags, TcpHeader, TcpOption};
 pub use protocols::udp::UdpHeader;
 pub use zero_copy::ByteCursor;
