@@ -260,4 +260,4 @@ at your option.
 
 ## 👥 Authors & Contributions
 
-Created by **rdxkeerthi** ([keerthi@fastflow.dev](mailto:keerthi@fastflow.dev)). Contributions, issues, and pull requests are warmly welcomed!
+Created by **rdxkeerthi**. Contributions, issues, and pull requests are warmly welcomed!
