@@ -3,7 +3,7 @@
 [![CI / CD](https://github.com/rdxkeerthi/fastflow/actions/workflows/test.yml/badge.svg)](https://github.com/rdxkeerthi/fastflow/actions)
 [![Fuzzing](https://github.com/rdxkeerthi/fastflow/actions/workflows/fuzz.yml/badge.svg)](https://github.com/rdxkeerthi/fastflow/actions)
 [![Crates.io](https://img.shields.io/crates/v/fastflow-core.svg)](https://crates.io/crates/fastflow-core)
-[![PyPI](https://img.shields.io/pypi/v/fastflow.svg)](https://pypi.org/project/fastflow/)
+[![PyPI](https://img.shields.io/pypi/v/fastflow-pcap.svg)](https://pypi.org/project/fastflow-pcap/)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/License-MIT%20OR%20Apache--2.0-blue.svg)](LICENSE-MIT)
 
 **FastFlow** is an ultra-high-performance, zero-copy network packet and telemetry parsing engine engineered in Rust with native Python bindings via PyO3.
@@ -51,10 +51,10 @@ Benchmark executed on an **AMD Ryzen 9 5950X (16 Cores, 32 Threads)** parsing a 
 ### Python Installation
 
 ```bash
-pip install fastflow
+pip install fastflow-pcap
 ```
 
-*Pre-compiled ABI3 wheels are available for Linux (`x86_64`, `aarch64`), macOS (`Apple Silicon`, `Intel`), and Windows (`x64`).*
+*Distributed on PyPI as `fastflow-pcap` (to prevent name collisions with legacy tools) and imported in Python as `import fastflow`. Pre-compiled ABI3 wheels are available for Linux (`x86_64`, `aarch64`), macOS (`Apple Silicon`, `Intel`), and Windows (`x64`).*
 
 ### Python Usage
 

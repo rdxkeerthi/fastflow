@@ -3,7 +3,7 @@ requires = ["maturin>=1.5,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "fastflow"
+name = "fastflow-pcap"
 version = "0.1.0"
 description = "Ultra-high-performance zero-copy network telemetry and PCAP parser powered by Rust."
 readme = "README.md"
