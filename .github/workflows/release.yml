@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   id-token: write
+  packages: write
 
 jobs:
   build-wheels:
@@ -50,10 +51,28 @@ jobs:
           name: wheels-${{ matrix.os }}-${{ matrix.target }}
           path: dist
 
-  github-release:
-    name: Create GitHub Release
+  build-rust-package:
+    name: Package Rust Crate
     runs-on: ubuntu-latest
-    needs: [build-wheels]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Package fastflow-core
+        run: cargo package --manifest-path crates/fastflow-core/Cargo.toml
+
+      - name: Upload Rust Crate Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-crate
+          path: target/package/*.crate
+
+  github-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-wheels, build-rust-package]
     steps:
       - uses: actions/checkout@v4
 
@@ -63,6 +82,12 @@ jobs:
           pattern: wheels-*
           path: dist
           merge-multiple: true
+
+      - name: Download Rust crate artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rust-crate
+          path: dist
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
@@ -77,6 +102,11 @@ jobs:
             ## FastFlow Release ${{ github.ref_name }} ⚡
             
             Ultra-High-Performance, Zero-Copy Network Telemetry & PCAP Engine engineered in Rust with native Python bindings via PyO3.
+            
+            ### Included Packages & Artifacts
+            - **Python Package (`fastflow-pcap`)**: Pre-compiled ABI3 wheels for Linux, macOS, and Windows.
+            - **Rust Crate (`fastflow-core`)**: Source crate archive `.crate` for crates.io.
+            - **GitHub Container Registry (ghcr.io)**: `ghcr.io/${{ github.repository }}:${{ github.ref_name }}`
             
             ### Highlights in this Release
             - **Hardened Security & Zero-Crash Architecture**:
@@ -95,6 +125,34 @@ jobs:
               - Fast entropy calculation for detecting DGA domains and DNS tunneling exfiltration.
             - **Deterministic Real Test Datasets**:
               - Included in `tests/data/` with full documentation in `tests/README.md`.
+
+  publish-github-packages:
+    name: Publish to GitHub Packages (ghcr.io)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push container to GitHub Packages
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
 
   publish-pypi:
     name: Publish to PyPI
