@@ -1,0 +1,8 @@
+# Enforce LF endings on all text files across all platforms to prevent rustfmt failures on Windows
+* text=auto eol=lf
+*.rs text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf

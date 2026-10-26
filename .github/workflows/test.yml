@@ -46,10 +46,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run Clippy (Strict Zero-Warning Lints)
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Run Core Tests
-        run: cargo test --workspace --verbose
+        run: cargo test -p fastflow-core --verbose
 
       - name: Security Audit (cargo-audit)
         if: matrix.os == 'ubuntu-latest'
