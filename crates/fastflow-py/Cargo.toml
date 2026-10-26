@@ -14,11 +14,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 fastflow-core = { path = "../fastflow-core" }
-pyo3 = { version = "0.21", features = ["abi3-py38"] }
+pyo3 = { version = "0.21", features = ["extension-module", "abi3-py38"] }
 memmap2 = "0.9"
 rayon = "1.10"
 
-[features]
-default = []
-extension-module = ["pyo3/extension-module"]
 

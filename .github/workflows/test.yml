@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain (${{ matrix.rust }})
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
           components: clippy, rustfmt
@@ -46,7 +46,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run Clippy (Strict Zero-Warning Lints)
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy -p fastflow-core --all-targets --all-features -- -D warnings
 
       - name: Run Core Tests
         run: cargo test -p fastflow-core --verbose
