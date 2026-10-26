@@ -241,3 +241,8 @@ def test_invalid_pcap_file():
     finally:
         if os.path.exists(pcap_path):
             os.remove(pcap_path)
+
+
+def test_package_version():
+    assert fastflow.__version__ == "0.2.0"
+

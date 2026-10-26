@@ -16,7 +16,7 @@ def compute_ipv4_checksum(header: bytes) -> int:
     """Computes RFC 791 internet checksum over IPv4 header."""
     if len(header) % 2 != 0:
         header += b"\x00"
-    s = sum(struct.unpack("!%dH" % (len(header) // 2), header))
+    s = sum(struct.unpack(f"!{len(header) // 2}H", header))
     while (s >> 16) > 0:
         s = (s & 0xFFFF) + (s >> 16)
     return ~s & 0xFFFF
@@ -175,8 +175,7 @@ def build_sample_web_traffic(out_path: str):
 
     with open(out_path, "wb") as f:
         f.write(pcap_global_header())
-        for sec, usec, pkt in frames:
-            f.write(pcap_record(sec, usec, pkt))
+        f.writelines(pcap_record(sec, usec, pkt) for sec, usec, pkt in frames)
 
 
 def build_syn_scan(out_path: str):
@@ -196,8 +195,7 @@ def build_syn_scan(out_path: str):
 
     with open(out_path, "wb") as f:
         f.write(pcap_global_header())
-        for sec, usec, pkt in frames:
-            f.write(pcap_record(sec, usec, pkt))
+        f.writelines(pcap_record(sec, usec, pkt) for sec, usec, pkt in frames)
 
 
 def build_dns_exfiltration(out_path: str):
@@ -225,8 +223,7 @@ def build_dns_exfiltration(out_path: str):
 
     with open(out_path, "wb") as f:
         f.write(pcap_global_header())
-        for sec, usec, pkt in frames:
-            f.write(pcap_record(sec, usec, pkt))
+        f.writelines(pcap_record(sec, usec, pkt) for sec, usec, pkt in frames)
 
 
 def build_malformed_corrupt(out_path: str):
@@ -266,8 +263,7 @@ def build_malformed_corrupt(out_path: str):
 
     with open(out_path, "wb") as f:
         f.write(pcap_global_header())
-        for sec, usec, pkt in frames:
-            f.write(pcap_record(sec, usec, pkt))
+        f.writelines(pcap_record(sec, usec, pkt) for sec, usec, pkt in frames)
         f.write(frame4_raw)
 
 

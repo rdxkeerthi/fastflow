@@ -32,7 +32,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-fastflow-core = "0.1"
+fastflow-core = "0.2"
 ```
 
 ### Example: Parsing & Aggregation

@@ -28,6 +28,6 @@ fn fastflow(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyPacketIterator>()?;
     m.add_function(wrap_pyfunction!(compute_shannon_entropy, m)?)?;
     m.add_function(wrap_pyfunction!(shannon_entropy, m)?)?;
-    m.add("__version__", "0.1.0")?;
+    m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     Ok(())
 }
